@@ -1250,7 +1250,7 @@ namespace typegen
         // used so we can fill out something like PROPERTY(myData = "min = 0.1, max = 0.5") then pull a struct Range { float min; float max; } out of it.
         static void ReflectedFill(object obj, string txt)
         {
-            string[] argList = txt.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] argList = txt.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < argList.Length; ++i)
             {
                 string[] terms = argList[i].Split('=');
