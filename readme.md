@@ -15,6 +15,20 @@ Var-args macros are used so arbitrary parameters can be provided
 #define REFLECT_FAKE(...)
 #define END_FAKE
 
+// variadic parameters are used for arbitrary parameters called `Traits`
+//		PROPERTY(tip = "here's a tip", step = "0.1", bigstep = 0.2, networked /*key-only trait*/)
+//	Traits are key-value or a key only flag
+//  Keys must not contain spaces and must be valid C-style identifier names.
+//	Values must be quoted if they are not a valid C-style identifier or type name
+//	Lists can be specified with semi-colon ; delimiters as myList = "1;2;3;4;5"
+//  	so that utility functions can extract a list
+//  Structs can be extracted from Traits with the utility `GetStruct<T>()`
+//		Fields must be specified as semicolon delimited 
+//		`structData = "x = 1; y = 0.5f; z = 1.0f"` and reflection will be used
+//		to fill in the struct T.
+
+// use the macros
+
 REFLECTED()
 enum class MyEnum : u8 {
   VALA = 1,
@@ -35,13 +49,13 @@ struct MyStruct {
     void PrintToConsole();
 };
 
-// Sometimes it may be too be impractical (or undesirable) to scan 
-// or markup a specific type so use REFLECT_FAKE to note what to use
-// this is akin to a manual attribute registration reflection, except
-// it's going into the CodeScanDB so it can be used for anything, be it
-// attribute registration, serialization, networking, GUI gen, etc.
+// Sometimes it may be too impractical (or undesirable) to scan or 
+// markup a specific type or file so use REFLECT_FAKE to define a type.
+// This is just like manual attribute registration reflection approaches,
+// except  it's going into the CodeScanDB so it can be used for anything, 
+// be it attribute registration, serialization, networking, GUI gen, etc.
 REFLECT_FAKE(name = HardStruct)
-    PROPERTY(name = "roger", type = "bool")
+    PROPERTY(name = "roger", type = "bool", tags = "tag1;tag2;tag3")
     VIRTUAL_PROPERTY(name = "moore", type = "float", get = "GetMoore", set = "SetMoore")
 END_FAKE
 
