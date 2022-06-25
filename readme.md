@@ -101,7 +101,7 @@ Dev/Headers/Graphics/Renderer.hpp
 
 ## Working with it
 
-See [Program.cs](.\typegen\Program.cs) and [DatabaseGenerators.cs](.\typegen\DatabaseGenerators.cs) for example of using thing [ReflectionScanner](.\typegen\ReflectionScanner.cs) and [CodeScanDB](.\typegen\CodeScanDB.cs),
+See [Program.cs](typegen/Program.cs) and [DatabaseGenerators.cs](typegen/DatabaseGenerators.cs) for example of using thing [ReflectionScanner](typegen/ReflectionScanner.cs) and [CodeScanDB](typegen/CodeScanDB.cs),
 
 First step of usage is to prime the built-in types for the ReflectionScanner to use. These include primitives (such as int and uint32_t, etc), templates (the scanner can't interpret template type definitions, only instances), and any other types desired such as those you care about knowing the type, but have no need to reflect it.
 
@@ -111,7 +111,7 @@ After that you can start working with the `ReflectionScanner.database` to do wha
 
 ## FieldDict
 
-A helper class [FieldDict.cs](.\typegen\FieldDict.cs) exists for generating basic `#define ttMyIdentifier 002939` mapping functions to/from string.
+A helper class [FieldDict.cs](typegen/FieldDict.cs) exists for generating basic `#define ttMyIdentifier 002939` mapping functions to/from string.
 
 Using that you can take an identifier header that looks something like:
 
