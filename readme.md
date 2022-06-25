@@ -99,7 +99,7 @@ Dev/Headers/MyOtherHeader.hpp
 Dev/Headers/Graphics/Renderer.hpp
 ```
 
-# Working with it
+## Working with it
 
 See [Program.cs](.\typegen\Program.cs) and [DatabaseGenerators.cs](.\typegen\DatabaseGenerators.cs) for example of using thing [ReflectionScanner](.\typegen\ReflectionScanner.cs) and [CodeScanDB](.\typegen\CodeScanDB.cs),
 
@@ -108,6 +108,46 @@ First step of usage is to prime the built-in types for the ReflectionScanner to 
 To process you feed arbitrary code into `ReflectionScanner.Scan(string code)` and when you're done call `ReflectionScanner.ConcludeScanning()` to resolve incomplete type handles and construct relationships between types.
 
 After that you can start working with the `ReflectionScanner.database` to do whatever is required.
+
+## FieldDict
+
+A helper class [FieldDict.cs](.\typegen\FieldDict.cs) exists for generating basic `#define ttMyIdentifier 002939` mapping functions to/from string.
+
+Using that you can take an identifier header that looks something like:
+
+```cpp
+#define ttInvalidField          0
+
+#define ttArrayLowTag  0xF000
+#define ttArrayHighTag 0xFEFF
+
+#define ttDirtyBitFlags         500
+#define ttTagDataArrayString    510
+
+#define ttFilterByVals          1040
+#define ttFilterRecomCat        1041
+#define ttFilterRecomCatVals    1042
+#define ttFilterRecomCatBlank   1043
+#define ttFilterCauseCat        1044
+#define ttFilterCauseCatVals    1045
+#define ttFilterCauseCatBlank   1046
+#define ttFilterConsCat         1047
+#define ttFilterConsCatVals     1048
+#define ttFilterConsCatBlank    1049
+#define ttFilterInclColon       1050
+#define ttFilterAnswer          1051
+#define ttFilterAnswerVals      1052
+#define ttFilterIntegerValueList 1968
+```
+
+into the following support functions with implementations to use for tasks like pretty-printing and human-friendly output while keeping the runtime advantages of trivial identifiers:
+
+```cpp
+FieldTag TagFromName(const std::string&);
+std::string TagToName(FieldTag);
+```
+
+
 
 ## Dependencies (nuget)
 
@@ -118,7 +158,7 @@ After that you can start working with the `ReflectionScanner.database` to do wha
 - Costura.Fody
   - For keeping the DLL sanity
 
-# To-Do
+## To-Do
 
 - std::function<> like  `std::function<int(float)>` etc
 - `* const`  aside from just in functions (`void MyFunc(const Object* const param)`)
