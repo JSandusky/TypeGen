@@ -1,6 +1,6 @@
 # TypeGen
 
-Limited stream parser to reflect C++ code into for type inspection. It relies on reasonably minimal annotation of source code to work in order to constrain the subset of C++ that it has to manage to parse in order to build a database that can be used for code generation tasks.
+Limited stream parser to reflect C++ code for type inspection. It relies on reasonably minimal annotation of source code to work in order to constrain the subset of C++ that it has to manage to parse in order to build a database that can be used for code generation tasks.
 
 Var-args macros are used so arbitrary parameters can be provided
 
