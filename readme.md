@@ -95,7 +95,15 @@ Dev/Headers/MyOtherHeader.hpp
 Dev/Headers/Graphics/Renderer.hpp
 ```
 
+# Working with it
 
+See [Program.cs](.\typegen\Program.cs) and [DatabaseGenerators.cs](.\typegen\DatabaseGenerators.cs) for example of using thing [ReflectionScanner](.\typegen\ReflectionScanner.cs) and [CodeScanDB](.\typegen\CodeScanDB.cs),
+
+First step of usage is to prime the built-in types for the ReflectionScanner to use. These include primitives (such as int and uint32_t, etc), templates (the scanner can't interpret template type definitions, only instances), and any other types desired such as those you care about knowing the type, but have no need to reflect it.
+
+To process you feed arbitrary code into `ReflectionScanner.Scan(string code)` and when you're done call `ReflectionScanner.ConcludeScanning()` to resolve incomplete type handles and construct relationships between types.
+
+After that you can start working with the `ReflectionScanner.database` to do whatever is required.
 
 ## Dependencies (nuget)
 
@@ -114,4 +122,5 @@ Dev/Headers/Graphics/Renderer.hpp
 - move semantics
 - Partial macro expansion (named list of macros to expand) 
 - Header preprocessor
-- Eliminate false name collisions
+- Eliminate false name collisions with contained type, non-trivial
+- Remove unnecessary dependencies that are from old C#->C++ transpiler code.
