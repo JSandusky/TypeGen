@@ -1,6 +1,6 @@
 # TypeGen
 
-Limited stream parser to reflect C++ code into for type inspection. It relies on reasonably minimal annotation of source code to work in order to constrain the subset of C++ that it has to manage to parse.
+Limited stream parser to reflect C++ code into for type inspection. It relies on reasonably minimal annotation of source code to work in order to constrain the subset of C++ that it has to manage to parse in order to build a database that can be used for code generation tasks.
 
 Var-args macros are used so arbitrary parameters can be provided
 
@@ -68,6 +68,10 @@ END_FAKE
 The project is meant to be a skeleton plus baseline examples. It isn't intended to fulfill any particular role out of the box beyond that.
 
 It is fully expected that the end user will customize it for their needs, using only the base skeleton. So copy it and tweak as you need.
+
+It's job is to parse code (or fake-definitions) to produce a type database that can be processed for arbitrary code-generation tasks. Be that generating reflection data for runtime use, tool editor UI, serialization, net-sync, etc.
+
+Arbitrary traits allow things like `PROPERTY(tip = "Radius within which to detect nearby targets", unit = "meters", step="0.1", bigstep = "0.5", range = "0.0 : 20.0")` to define a float field a tool UI can describe with assistive information like the unit of measurement, settings for controlling spin-box behaviour, and constraint rules locking the value between 0 and 20. Actually doing these things is on you and your code generation to handle, but you can basically stuff any metadata you wish and query for it.
 
 ## Usage
 
