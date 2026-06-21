@@ -187,6 +187,11 @@ namespace STB
         public int parse_point;
 
         /// <summary>
+        /// One-token lookahead pushback used by template parsing to split >> into two > tokens.
+        /// </summary>
+        int stashedToken_ = 0;
+
+        /// <summary>
         /// Indexes of the current token's characters
         /// </summary>
         public int where_firstchar, where_lastchar;
@@ -303,6 +308,15 @@ namespace STB
 
         #region internals
 
+        /// <summary>
+        /// Push a synthetic token to be returned by the next GetToken() call.
+        /// Used by template parsing to split a ShiftRight token into two > tokens.
+        /// </summary>
+        public void StashToken(int token)
+        {
+            stashedToken_ = token;
+        }
+
         public void SaveState(Lexer into)
         {
             into.parse_point = parse_point;
@@ -316,6 +330,7 @@ namespace STB
             into.number_suffix = number_suffix;
             into.where_firstchar = where_firstchar;
             into.where_lastchar = where_lastchar;
+            into.stashedToken_ = stashedToken_;
         }
 
         public void RestoreState(Lexer old)
@@ -332,6 +347,7 @@ namespace STB
             number_suffix = old.number_suffix;
             where_firstchar = old.where_firstchar;
             where_lastchar = old.where_lastchar;
+            stashedToken_ = old.stashedToken_;
         }
 
         float ParseFloat(int p, out int q)
@@ -586,7 +602,14 @@ namespace STB
         /// </summary>
         /// <returns>Token found</returns>
         public int GetToken()
-        {            
+        {
+            if (stashedToken_ != 0)
+            {
+                token = stashedToken_;
+                stashedToken_ = 0;
+                return token;
+            }
+
             // these are always wiped, if you care about you have to check it yourself
             line_start = 0;
             error_message = null;
