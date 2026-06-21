@@ -621,12 +621,33 @@ $@"        if (rhs.GetType() == VAR_FLOAT || rhs.GetType() == VAR_INT || rhs.Get
                     {
                         // Getter / Setter
                         if (!string.IsNullOrEmpty(p.bindingData_.Get("set")))
-                            sb.AppendLine($"    V({p.GetFullTypeName(false)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}, {p.bindingData_.Get("set")}) \\");
+                            sb.AppendLine($"    V({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}, {p.bindingData_.Get("set")}) \\");
                         else // Getter only == read-only
-                            sb.AppendLine($"    RO({p.GetFullTypeName(false)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}) \\");
+                            sb.AppendLine($"    RO({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}) \\");
                     }
                     else // direct access
-                        sb.AppendLine($"    X({p.GetFullTypeName(false)}, {p.propertyName_}, \"{p.propertyName_}\") \\");
+                        sb.AppendLine($"    X({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\") \\");
+                }
+                sb.AppendLine("");
+            }
+
+            sb.AppendLine("/// ================================");
+            sb.AppendLine("/// GENERATED INHERITANCE X MACROS");
+            sb.AppendLine("/// ================================");
+            sb.AppendLine("");
+
+            var derivedTypes = database.types_.Values
+                .Where(t => !t.isInternal_ && !t.isPrimitive_ && !t.IsEnum && t.baseClass_.Count > 0)
+                .OrderBy(t => t.Depth())
+                .ToList();
+
+            if (derivedTypes.Count > 0)
+            {
+                sb.AppendLine("#define _x_Class_tree(X) \\");
+                foreach (var type in derivedTypes)
+                {
+                    var baseType = type.baseClass_[0];
+                    sb.AppendLine($"    X({baseType.typeName_}, {type.typeName_}) \\");
                 }
                 sb.AppendLine("");
             }

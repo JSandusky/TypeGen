@@ -804,6 +804,16 @@ namespace typegen
                 // VANILLA FIELD
                 else
                 {
+                    if (ctorDtor)
+                    {
+                        // ctor/dtor detected but fell through to field handling
+                        // because GetTypeInformation already consumed the name token
+                        // and positioned us past '(' — skip adding as a property
+                        while (lexer.token != ';' && lexer.token != Token.EOF)
+                            AdvanceLexer(lexer);
+                        return;
+                    }
+
                     CodeScanDB.Property property = new CodeScanDB.Property();
                     property.propertyName_ = name;
                     property.type_ = foundType;
