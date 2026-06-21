@@ -104,8 +104,9 @@ namespace typegen
             }
             else if (options.gen == Generator.ASBindings)
             {
+                AngelscriptGenerator asGen = new AngelscriptGenerator();
                 StringBuilder sb = new StringBuilder();
-                writer.BindScript(sb, scanner);
+                asGen.BindScript(sb, scanner);
                 System.IO.File.WriteAllText(options.output, sb.ToString());
             }
             else if (options.gen == Generator.VariantCall)

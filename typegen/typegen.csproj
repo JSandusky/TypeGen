@@ -98,6 +98,7 @@
     <Compile Include="MonoGenerator.cs" />
     <Compile Include="ReflectionScanner.cs" />
     <Compile Include="TopologicalSort.cs" />
+    <Compile Include="AngelscriptGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
