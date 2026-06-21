@@ -20,7 +20,8 @@ namespace typegen
         ASBindings,
         DataFields,
         VariantCall,
-        VariantMath
+        VariantMath,
+        Mono
     }
 
     public class CmdLineOptions
@@ -39,6 +40,12 @@ namespace typegen
 
         [Option("postunderscore", Default = false, HelpText = "Append a trailing underscore to memeber names")]
         public bool postfixUnderscore { get; set; } = false;
+
+        [Option("namespace", Default="Chordata", HelpText="Namespace for Mono generation")]
+        public string Namespace { get;set; }
+
+        [Option("globname", Default = "Globals", HelpText = "Classname to use for Global methods container")]
+        public string Globals { get; set; }
     }
 
     class Program
@@ -134,16 +141,18 @@ namespace typegen
                 writer.WriteXMacros(sb, scanner.database);
                 System.IO.File.WriteAllText(options.output, sb.ToString());
             }
+            else if (options.gen == Generator.Mono)
+            {
+                StringBuilder cpp = new StringBuilder();
+                StringBuilder cs = new StringBuilder();
+
+                MonoGenerator mono = new MonoGenerator();
+                mono.WriteMonoBindings(cpp, cs, scanner.database, options.Namespace, ".", options.Globals);
+                System.IO.File.WriteAllText("MonoBind.cpp", cpp.ToString());
+                System.IO.File.WriteAllText("MonoBind.cs", cs.ToString());
+            }
             else
                 Console.WriteLine("Unimplemented generator specified");
-
-            StringBuilder cpp = new StringBuilder();
-            StringBuilder cs = new StringBuilder();
-
-            MonoGenerator mono = new MonoGenerator();
-            mono.WriteMonoBindings(cpp, cs, scanner.database, "Chordata", ".", "Globals");
-            System.IO.File.WriteAllText("MonoBind.cpp", cpp.ToString());
-            System.IO.File.WriteAllText("MonoBind.cs", cs.ToString());
 
             return 0;
         }
