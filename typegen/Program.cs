@@ -139,7 +139,7 @@ namespace typegen
             StringBuilder cs = new StringBuilder();
 
             MonoGenerator mono = new MonoGenerator();
-            mono.WriteMonoBindings(cpp, cs, scanner.database, "Chordata");
+            mono.WriteMonoBindings(cpp, cs, scanner.database, "Chordata", ".", "Globals");
             System.IO.File.WriteAllText("MonoBind.cpp", cpp.ToString());
             System.IO.File.WriteAllText("MonoBind.cs", cs.ToString());
 

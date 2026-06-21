@@ -725,6 +725,7 @@ namespace typegen
             {
                 AdvanceLexer(lexer);
                 List<CodeScanDB.TemplateParam> templateTypes = new List<CodeScanDB.TemplateParam>();
+                bool closedByShiftRight = false;
                 do
                 {
                     List<CodeScanDB.TemplateParam> junk = new List<CodeScanDB.TemplateParam>();
@@ -742,6 +743,15 @@ namespace typegen
                         else
                             templateTypes.Add(new CodeScanDB.TemplateParam { Type = new CodeScanDB.Property { type_ = new CodeScanDB.ReflectedType { isComplete_ = false, typeName_ = foundTemplateName }, accessModifiers_ = mods, templateParameters_ = junk } });
                     }
+
+                    if (lexer.token == Token.ShiftRight)
+                    {
+                        lexer.token = '>';
+                        lexer.StashToken('>');
+                        closedByShiftRight = true;
+                        break;
+                    }
+
                     if (lexer.Peek() == ',')
                     {
                         AdvanceLexer(lexer);
@@ -754,7 +764,8 @@ namespace typegen
                 } while (lexer.token != '>' && lexer.token != Token.EOF);
 
                 templateParams = templateTypes;
-                AdvanceLexer(lexer);
+                if (!closedByShiftRight)
+                    AdvanceLexer(lexer);
             }
 
             if (lexer.token == '*')
