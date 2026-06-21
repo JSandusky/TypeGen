@@ -621,12 +621,12 @@ $@"        if (rhs.GetType() == VAR_FLOAT || rhs.GetType() == VAR_INT || rhs.Get
                     {
                         // Getter / Setter
                         if (!string.IsNullOrEmpty(p.bindingData_.Get("set")))
-                            sb.AppendLine($"    V({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}, {p.bindingData_.Get("set")}) \\");
+                            sb.AppendLine($"    V({p.GetFullTypeName(false)}, {p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}, {p.bindingData_.Get("set")}) \\");
                         else // Getter only == read-only
-                            sb.AppendLine($"    RO({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}) \\");
+                            sb.AppendLine($"    RO({p.GetFullTypeName(false)}, {p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\", {p.bindingData_.Get("get")}) \\");
                     }
                     else // direct access
-                        sb.AppendLine($"    X({p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\") \\");
+                        sb.AppendLine($"    X({p.GetFullTypeName(false)}, {p.GetFullTypeName(true)}, {p.propertyName_}, \"{p.propertyName_}\") \\");
                 }
                 sb.AppendLine("");
             }
