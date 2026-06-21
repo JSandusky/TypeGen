@@ -726,12 +726,17 @@ namespace typegen
                     }
                 }
 
-                lexer.SaveState();
-                if (AdvanceLexer(lexer) == 0)
-                    return;
+                bool alreadyAtParen = (ctorDtor && lexer.token == '(');
+
+                if (!alreadyAtParen)
+                {
+                    lexer.SaveState();
+                    if (AdvanceLexer(lexer) == 0)
+                        return;
+                }
 
                 // FUNCTION OR METHOD
-                if (lexer.token == '(')
+                if (alreadyAtParen || lexer.token == '(')
                 {
                     // they aren't automatically bound, requiring binding allows making some strictness that wouldn't fly in an autobinding situation
                     // not handling everything under the sun
@@ -761,7 +766,8 @@ namespace typegen
                     else
                     {
                         // not processing method, eat until we hit a semi-colon
-                        lexer.RestoreState();
+                        if (!alreadyAtParen)
+                            lexer.RestoreState();
                         lexer.EatBlock('(', ')');
                         if (lexer.PeekText() == "const")
                             AdvanceLexer(lexer);
@@ -804,16 +810,6 @@ namespace typegen
                 // VANILLA FIELD
                 else
                 {
-                    if (ctorDtor)
-                    {
-                        // ctor/dtor detected but fell through to field handling
-                        // because GetTypeInformation already consumed the name token
-                        // and positioned us past '(' — skip adding as a property
-                        while (lexer.token != ';' && lexer.token != Token.EOF)
-                            AdvanceLexer(lexer);
-                        return;
-                    }
-
                     CodeScanDB.Property property = new CodeScanDB.Property();
                     property.propertyName_ = name;
                     property.type_ = foundType;
