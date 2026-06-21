@@ -21,11 +21,25 @@ namespace typegen
      *  
      *  ParseIDHeader(string[]) can be used to extract #define abcdefg #### parts out of files
      */
+    public class FieldEntry
+    {
+        public string Name { get; set; }
+        public ushort Value { get; set; }
+        public string Comment { get; set; }
+
+        public FieldEntry(string name, ushort value, string comment = "")
+        {
+            Name = name;
+            Value = value;
+            Comment = comment ?? "";
+        }
+    }
+
     public class FieldDict
     {
-        public static List<KeyValuePair<string, ushort> > ParseIDHeader(string[] lines)
+        public static List<FieldEntry> ParseIDHeader(string[] lines)
         {
-            List<KeyValuePair<string, ushort>> fields = new List<KeyValuePair<string, ushort>>();
+            List<FieldEntry> fields = new List<FieldEntry>();
 
             foreach (var line in lines)
             {
@@ -46,7 +60,6 @@ namespace typegen
                     var tagText = trim.Replace("#define ", "");
 
                     string tagName = "";
-
                     int c = 0;
                     for (; c < tagText.Length; ++c)
                     {
@@ -55,15 +68,31 @@ namespace typegen
                         tagName += tagText[c];
                     }
 
-                    while (char.IsWhiteSpace(tagText[c]))
+                    while (c < tagText.Length && char.IsWhiteSpace(tagText[c]))
                         ++c;
 
-                    string valueText = "";
-                    for (; c < tagText.Length; ++c)
+                    string remainder = c < tagText.Length ? tagText.Substring(c) : "";
+
+                    string comment = "";
+                    string valueText = remainder;
+                    int commentStart = remainder.IndexOf("//");
+                    if (commentStart >= 0)
                     {
-                        if (char.IsWhiteSpace(tagText[c]))
-                            break;
-                        valueText += tagText[c];
+                        comment = remainder.Substring(commentStart + 2).Trim();
+                        valueText = remainder.Substring(0, commentStart).Trim();
+                    }
+                    else
+                    {
+                        int blockStart = remainder.IndexOf("/*");
+                        if (blockStart >= 0)
+                        {
+                            int blockEnd = remainder.IndexOf("*/", blockStart + 2);
+                            if (blockEnd >= 0)
+                            {
+                                comment = remainder.Substring(blockStart + 2, blockEnd - blockStart - 2).Trim();
+                                valueText = remainder.Substring(0, blockStart).Trim();
+                            }
+                        }
                     }
 
                     ushort value = 0;
@@ -77,11 +106,11 @@ namespace typegen
                     {
                         if (ushort.TryParse(valueText, out value) == false)
                         {
-                            value = fields.FirstOrDefault(i => i.Key == valueText).Value;
+                            value = fields.FirstOrDefault(i => i.Name == valueText)?.Value ?? 0;
                         }
                     }
 
-                    fields.Add(new KeyValuePair<string, ushort>(tagName, value));
+                    fields.Add(new FieldEntry(tagName, value, comment));
                 }
             }
 
@@ -112,7 +141,7 @@ namespace typegen
 
             sb.AppendLine($"static const std::map<std::string, {tagTypeName}> _{functionWord}_from_name = {{");
             foreach (var v in fields)
-                sb.AppendLine($"    {{ \"{v.Key}\", {v.Value} }},");
+                sb.AppendLine($"    {{ \"{v.Name}\", {v.Value} }},");
             sb.AppendLine("};");
             sb.AppendLine();
             sb.AppendLine($"{tagTypeName} {functionWord}FromName(const std::string& aName) {{");
@@ -122,10 +151,9 @@ namespace typegen
             sb.AppendLine("    return {};");
             sb.AppendLine("}");
             sb.AppendLine();
-
             sb.AppendLine($"static const std::map<{tagTypeName}, std::string> _{functionWord}_to_name = {{");
             foreach (var v in fields)
-                sb.AppendLine($"    {{ {v.Value}, \"{v.Key}\" }},");
+                sb.AppendLine($"    {{ {v.Value}, \"{v.Name}\" }},");
             sb.AppendLine("};");
             sb.AppendLine();
             sb.AppendLine($"std::string {functionWord}ToName({tagTypeName} aTag) {{");
