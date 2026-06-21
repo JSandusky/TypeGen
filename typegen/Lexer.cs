@@ -967,7 +967,7 @@ namespace STB
                 }
                 else if (input_stream[q] == '\"')
                     inQuote = !inQuote;
-                else if (input_stream[q] == '\"')
+                else if (input_stream[q] == '\'')
                     inChar = !inChar;
                 else if (input_stream[q] == '\\')
                 {
