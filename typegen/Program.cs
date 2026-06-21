@@ -118,7 +118,8 @@ namespace typegen
             else if (options.gen == Generator.DataFields)
             {
                 StringBuilder sb = new StringBuilder();
-                writer.WriteDataFields(sb, scanner.database);
+                DataFieldsGenerator dataFieldsGen = new DataFieldsGenerator();
+                dataFieldsGen.WriteDataFields(sb, scanner.database);
                 System.IO.File.WriteAllText(options.output, sb.ToString());
             }
             else if (options.gen == Generator.VariantMath)

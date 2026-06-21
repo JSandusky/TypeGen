@@ -88,6 +88,7 @@
     <Compile Include="CodeScanDB.cs" />
     <Compile Include="CodeScanDB_Ext.cs" />
     <Compile Include="DatabaseGenerators.cs" />
+    <Compile Include="DataFieldsGenerator.cs" />
     <Compile Include="DepthScanner.cs" />
     <Compile Include="DoxygenXML.cs" />
     <Compile Include="Extensions.cs" />
