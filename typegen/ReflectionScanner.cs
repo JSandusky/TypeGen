@@ -280,6 +280,37 @@ namespace typegen
 
                                 t.properties_.Add(p);
                             }
+                            else if (lexer.string_value == "METHOD_CMD")
+                            {
+                                var pTraits = ReadTraits(lexer);
+                                CodeScanDB.Method m = new CodeScanDB.Method { methodName_ = pTraits.Get("name") };
+                                m.declaringType_ = t;
+                                m.callConv_ = pTraits.Get("callconv");
+                                m.apiDecl_ = pTraits.Get("api");
+                                m.returnType_ = new CodeScanDB.Property {  type_ = database.GetType("void") };
+                                m.bindingData_ = pTraits;
+
+                                if (pTraits.HasTrait("return"))
+                                { // return type
+                                    Lexer l = new Lexer(pTraits.Get("return").Unquote());
+                                    l.GetToken();
+                                    m.returnType_ = new CodeScanDB.Property {  };
+                                    string dud = "";
+                                    AccessModifiers mods = 0;
+                                    m.returnType_.type_ = GetTypeInformation(l, database, t, ref mods, ref m.returnType_.templateParameters_, out dud, out m.returnType_.pointerLevel_);
+                                    m.accessModifiers_ = mods & AccessModifiers.AM_Virtual; // only the virtual modifier is allowed at this point
+                                    m.returnType_.accessModifiers_ = mods & ~AccessModifiers.AM_Virtual;
+                                }
+
+                                if (pTraits.HasTrait("params"))
+                                {
+                                    Lexer l = new Lexer(pTraits.Get("params").Unquote());
+                                    l.GetToken();
+                                    ReadMethodParmaeters(l, m, database);
+                                }
+
+                                t.methods_.Add(m);
+                            }
                             else if (lexer.string_value == "END_FAKE")
                                 break;
                             else // hit someting illegal
@@ -490,7 +521,7 @@ namespace typegen
 
             while (AdvanceLexer(lexer) != 0 && (lexer.token != ':' && lexer.token != '{'))
             {
-                if (lexer.TokenText == "abtract")
+                if (lexer.TokenText == "abstract")
                     type.isAbstract_ = true;
                 if (lexer.TokenText == "final")
                     type.isFinal_ = true;
@@ -544,22 +575,28 @@ namespace typegen
                     {
                         if (lexer.string_value == "struct")
                         {
+                            typeStack.Push(type);
                             var subType = ProcessStruct(lexer, false, database, true, ref typeStack);
                             type.subTypes_.Add(subType);
                             subType.containingType_ = type;
+                            typeStack.Pop();
                         }
                         else if (lexer.string_value == "class")
                         {
+                            typeStack.Push(type);
                             var subType = ProcessStruct(lexer, true, database, false, ref typeStack);
                             type.subTypes_.Add(subType);
                             subType.containingType_ = type;
+                            typeStack.Pop();
                         }
                         else if (lexer.string_value == "enum")
                         {
+                            typeStack.Push(type);
                             var subType = ProcessEnum(lexer, database);
                             type.subTypes_.Add(subType);
                             subType.containingType_ = type;
                             database.types_.Add(subType.typeName_, subType);
+                            typeStack.Pop();
                         }
                     }
                 }
@@ -713,87 +750,7 @@ namespace typegen
                         else
                             database.globalFunctions_.Add(newMethod);
 
-                        while (lexer.token != ')' && AdvanceLexer(lexer) != 0 && lexer.token != ')' && lexer.token != ';')
-                        {
-                            // get the argument
-                            CodeScanDB.Property prop = new CodeScanDB.Property();
-                            newMethod.argumentTypes_.Add(prop);
-                            string foundTypeName = "";
-                            // null on the forType specifically so we can handle copy constructors, otherwise it would fail
-                            var functionArgType = GetTypeInformation(lexer, database, null, ref prop.accessModifiers_, ref prop.templateParameters_, out foundTypeName, out prop.pointerLevel_);
-                            if (functionArgType != null)
-                                prop.type_ = functionArgType;
-                            else
-                                prop.type_ = new CodeScanDB.ReflectedType { isComplete_ = false, typeName_ = foundTypeName };
-
-                            if (lexer.token == '*')
-                            {
-                                prop.accessModifiers_ |= AccessModifiers.AM_Pointer;
-                                prop.pointerLevel_ += 1;
-                                AdvanceLexer(lexer);
-                            }
-                            else if (lexer.token == '&')
-                            {
-                                prop.accessModifiers_ |= AccessModifiers.AM_Reference;
-                                AdvanceLexer(lexer);
-                            }
-                            
-                            if (lexer.token == Token.ID)
-                            {
-                                newMethod.argumentNames_.Add(lexer.string_value);
-                                AdvanceLexer(lexer);
-                            }
-
-                            while (lexer.token != ',' && lexer.token != ')')
-                            {
-                                if (lexer.token == '=') // scrape any default assignment verbatim
-                                {
-                                    AdvanceLexer(lexer);
-                                    prop.defaultValue_ = lexer.ToStringUntil(new long[] { ',', ';', ')' });
-                                    newMethod.defaultArguments_.Add(prop.defaultValue_);
-                                }
-                                else
-                                    AdvanceLexer(lexer);
-                            }
-
-                            // make sure we're always the right size, if we've got nothing
-                            while (newMethod.defaultArguments_.Count < newMethod.argumentTypes_.Count)
-                                newMethod.defaultArguments_.Add(null);
-                            while (newMethod.argumentNames_.Count < newMethod.argumentTypes_.Count)
-                                newMethod.argumentNames_.Add(null);
-
-                        }
-
-                        if (lexer.PeekText() == "const")
-                        {
-                            newMethod.accessModifiers_ |= AccessModifiers.AM_Const;
-                            AdvanceLexer(lexer);
-                        }
-
-                        if (lexer.PeekText() == "override")
-                        {
-                            newMethod.accessModifiers_ |= AccessModifiers.AM_Override;
-                            AdvanceLexer(lexer);
-                        }
-
-                        if (lexer.PeekText() == "final")
-                        {
-                            newMethod.accessModifiers_ |= AccessModifiers.AM_Final;
-                            AdvanceLexer(lexer);
-                        }
-
-                        if (lexer.PeekText() == "abstract")
-                        {
-                            newMethod.accessModifiers_ |= AccessModifiers.AM_Abstract;
-                            AdvanceLexer(lexer);
-                        }
-
-                        // clean up constexpr, our return type isn't constexpr, we are
-                        if (newMethod.returnType_ != null && newMethod.returnType_.accessModifiers_.HasFlag(AccessModifiers.AM_ConstExpr))
-                        {
-                            newMethod.accessModifiers_ |= AccessModifiers.AM_ConstExpr;
-                            newMethod.returnType_.accessModifiers_ &= ~AccessModifiers.AM_ConstExpr;
-                        }
+                        ReadMethodParmaeters(lexer, newMethod, database);
 
                         if (lexer.Peek() == '{')
                         {
@@ -1070,6 +1027,91 @@ namespace typegen
             }
 
             return foundType;
+        }
+
+        void ReadMethodParmaeters(Lexer lexer, CodeScanDB.Method newMethod, CodeScanDB database)
+        {
+            while (lexer.token != ')' && AdvanceLexer(lexer) != 0 && lexer.token != ')' && lexer.token != ';')
+            {
+                // get the argument
+                CodeScanDB.Property prop = new CodeScanDB.Property();
+                newMethod.argumentTypes_.Add(prop);
+                string foundTypeName = "";
+                // null on the forType specifically so we can handle copy constructors, otherwise it would fail
+                var functionArgType = GetTypeInformation(lexer, database, null, ref prop.accessModifiers_, ref prop.templateParameters_, out foundTypeName, out prop.pointerLevel_);
+                if (functionArgType != null)
+                    prop.type_ = functionArgType;
+                else
+                    prop.type_ = new CodeScanDB.ReflectedType { isComplete_ = false, typeName_ = foundTypeName };
+
+                if (lexer.token == '*')
+                {
+                    prop.accessModifiers_ |= AccessModifiers.AM_Pointer;
+                    prop.pointerLevel_ += 1;
+                    AdvanceLexer(lexer);
+                }
+                else if (lexer.token == '&')
+                {
+                    prop.accessModifiers_ |= AccessModifiers.AM_Reference;
+                    AdvanceLexer(lexer);
+                }
+
+                if (lexer.token == Token.ID)
+                {
+                    newMethod.argumentNames_.Add(lexer.string_value);
+                    AdvanceLexer(lexer);
+                }
+
+                while (lexer.token != ',' && lexer.token != ')')
+                {
+                    if (lexer.token == '=') // scrape any default assignment verbatim
+                    {
+                        AdvanceLexer(lexer);
+                        prop.defaultValue_ = lexer.ToStringUntil(new long[] { ',', ';', ')' });
+                        newMethod.defaultArguments_.Add(prop.defaultValue_);
+                    }
+                    else
+                        AdvanceLexer(lexer);
+                }
+
+                // make sure we're always the right size, if we've got nothing
+                while (newMethod.defaultArguments_.Count < newMethod.argumentTypes_.Count)
+                    newMethod.defaultArguments_.Add(null);
+                while (newMethod.argumentNames_.Count < newMethod.argumentTypes_.Count)
+                    newMethod.argumentNames_.Add(null);
+
+            }
+
+            if (lexer.PeekText() == "const")
+            {
+                newMethod.accessModifiers_ |= AccessModifiers.AM_Const;
+                AdvanceLexer(lexer);
+            }
+
+            if (lexer.PeekText() == "override")
+            {
+                newMethod.accessModifiers_ |= AccessModifiers.AM_Override;
+                AdvanceLexer(lexer);
+            }
+
+            if (lexer.PeekText() == "final")
+            {
+                newMethod.accessModifiers_ |= AccessModifiers.AM_Final;
+                AdvanceLexer(lexer);
+            }
+
+            if (lexer.PeekText() == "abstract")
+            {
+                newMethod.accessModifiers_ |= AccessModifiers.AM_Abstract;
+                AdvanceLexer(lexer);
+            }
+
+            // clean up constexpr, our return type isn't constexpr, we are
+            if (newMethod.returnType_ != null && newMethod.returnType_.accessModifiers_.HasFlag(AccessModifiers.AM_ConstExpr))
+            {
+                newMethod.accessModifiers_ |= AccessModifiers.AM_ConstExpr;
+                newMethod.returnType_.accessModifiers_ &= ~AccessModifiers.AM_ConstExpr;
+            }
         }
 
         bool ReadNameOrModifiers(Lexer lexer, ref AccessModifiers modifiers, out string name)

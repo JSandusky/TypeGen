@@ -115,7 +115,7 @@ namespace typegen
                 sb.AppendLine($"    {{ \"{v.Key}\", {v.Value} }},");
             sb.AppendLine("};");
             sb.AppendLine();
-            sb.AppendLine($"FieldTag {functionWord}FromName(const std::string& aName) {{");
+            sb.AppendLine($"{tagTypeName} {functionWord}FromName(const std::string& aName) {{");
             sb.AppendLine($"    auto found = _{functionWord}_from_name.find(aName);");
             sb.AppendLine($"    if (found != _{functionWord}_from_name.end())");
             sb.AppendLine("        return found->second;");

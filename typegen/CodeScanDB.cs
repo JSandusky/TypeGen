@@ -177,7 +177,7 @@ namespace typegen
                 if (argumentTypes_.Count != rhs.argumentTypes_.Count)
                     return false;
 
-                if (accessModifiers_.HasFlag(AccessModifiers.AM_Const) != accessModifiers_.HasFlag(AccessModifiers.AM_Const))
+                if (accessModifiers_.HasFlag(AccessModifiers.AM_Const) != rhs.accessModifiers_.HasFlag(AccessModifiers.AM_Const))
                     return false;
 
                 for (int i = 0; i < argumentTypes_.Count; ++i)
@@ -277,20 +277,20 @@ namespace typegen
                     case "short": return true;
                     case "int": return true;
                     case "uint32_t": return true;
-
                     case "int8_t": return true;
                     case "uint8_t": return true;
                     case "int16_t": return true;
                     case "uint16_t": return true;
                     case "int64_t": return true;
                     case "uint64_t": return true;
-
-                        case "float": return true;
+                    case "float": return true;
                     case "double": return true;
                     default: return false;
                     }
                 }
             }
+
+            public bool CanBeNumeric { get { return IsNumeric || IsEnum || typeName_ == "bool"; } }
 
             public bool IsEnum { get {  return enumValues_.Count > 0; } }
 

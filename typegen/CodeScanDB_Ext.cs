@@ -41,14 +41,10 @@ namespace typegen
 
         public static CodeScanDB.ReflectedType GetRoot(this CodeScanDB.ReflectedType type)
         {
-            var lastGood = type;
-            var found = type.FirstBase();
-            do
-            {
-                lastGood = found;
-                found = found.FirstBase();
-            } while (found != null);
-            return lastGood;
+            var current = type;
+            while (current.FirstBase() != null)
+                current = current.FirstBase();
+            return current;
         }
 
         public static int Depth(this CodeScanDB.ReflectedType type)
@@ -184,8 +180,8 @@ namespace typegen
                 if (terms.Length == 2)
                 {
                     terms[0] = terms[0].Trim();
-                    // ~ and ` replace for quotes when filling
-                    terms[1] = terms[1].Trim().Replace("~", "\"").Replace("`", "\"");
+                    // `` replace for quotes when filling
+                    terms[1] = terms[1].Trim().Replace("``", "\"");
 
                     var prop = obj.GetType().GetField(terms[0]);
                     if (prop != null)

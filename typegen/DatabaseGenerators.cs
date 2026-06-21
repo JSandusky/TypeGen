@@ -539,12 +539,12 @@ $@"    if (src.HasField({tagID}) {{
         {
             var types = database.FlatTypes.Where(t => t.isInternal_ == true && t.isVector_ == true);
 
-            string[] operators = new string[] { "+", "-", "*", "/"};
+            string[] operators = new string[] { "+", "-", "*", "/", "<", "<=", "==", "!=", ">=", ">"};
             string[] calls = new string[] { "Add", "Sub", "Mul", "Div" };
 
             for (int m = 0; m < operators.Length; ++m)
             { 
-                sb.AppendLine($"Variant Variant_{calls[m]}(const Variant& lhs, const Variant& rhs) {{");
+                sb.AppendLine($"Variant operator{operators[m]}(const Variant& lhs, const Variant& rhs) {{");
                 foreach (var t in types)
                 {
                     sb.AppendLine($"    if (lhs.GetType() == GetVariantType<{t.typeName_}>()) {{");
@@ -597,7 +597,7 @@ $@"        if (rhs.GetType() == VAR_FLOAT || rhs.GetType() == VAR_INT || rhs.Get
                 if (e.Value.IsEnum)
                 {
                     CodeScanDB.ReflectedType type = e.Value;
-                    sb.AppendLine($"#define _x_{type.typeName_}_values \\");
+                    sb.AppendLine($"#define _x_{type.typeName_}_values(X) \\");
                     foreach (var val in type.enumValues_)
                         sb.AppendLine($"    X({val.Key}, {val.Value}) \\");
                     sb.AppendLine("");
@@ -614,7 +614,7 @@ $@"        if (rhs.GetType() == VAR_FLOAT || rhs.GetType() == VAR_INT || rhs.Get
                     continue;
 
                 CodeScanDB.ReflectedType type = t.Value;
-                sb.AppendLine($"#define _x_{type.typeName_}_properties \\");
+                sb.AppendLine($"#define _x_{type.typeName_}_properties(X) \\");
                 foreach (var p in type.properties_)
                 { 
                     if (p.accessModifiers_.HasFlag(AccessModifiers.AM_Virtual))

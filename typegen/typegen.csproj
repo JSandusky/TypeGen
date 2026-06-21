@@ -89,10 +89,13 @@
     <Compile Include="CodeScanDB_Ext.cs" />
     <Compile Include="DatabaseGenerators.cs" />
     <Compile Include="DepthScanner.cs" />
+    <Compile Include="DoxygenXML.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FieldDict.cs" />
     <Compile Include="GeneralUtility.cs" />
+    <Compile Include="HLSLProcessor.cs" />
     <Compile Include="Lexer.cs" />
+    <Compile Include="MonoGenerator.cs" />
     <Compile Include="ReflectionScanner.cs" />
     <Compile Include="TopologicalSort.cs" />
     <Compile Include="Program.cs" />

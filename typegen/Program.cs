@@ -135,6 +135,14 @@ namespace typegen
             else
                 Console.WriteLine("Unimplemented generator specified");
 
+            StringBuilder cpp = new StringBuilder();
+            StringBuilder cs = new StringBuilder();
+
+            MonoGenerator mono = new MonoGenerator();
+            mono.WriteMonoBindings(cpp, cs, scanner.database, "Chordata");
+            System.IO.File.WriteAllText("MonoBind.cpp", cpp.ToString());
+            System.IO.File.WriteAllText("MonoBind.cs", cs.ToString());
+
             return 0;
         }
     }
