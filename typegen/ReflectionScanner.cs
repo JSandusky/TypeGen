@@ -122,7 +122,7 @@ namespace typegen
             database.AddInternalType("int64_t", "VT_Int64", 0, true, false);
             database.AddInternalType("double", "VT_Double", 0, true, false);
             database.AddInternalType("std::string", "VT_String", 0, true, false);
-            database.AddInternalType("size_t", "", 0, true, false);
+            database.AddInternalType("size_t", "VT_UInt64", 0, true, false);
 
             // URHO3D
             database.AddInternalType("IntVector2", "VT_IntVector2", 0, true, false)
@@ -201,9 +201,10 @@ namespace typegen
             code = Regex.Replace(code, @"\bunsigned char\b", "uint8_t");
             code = Regex.Replace(code, @"\bunsigned short\b", "uint16_t");
             code = Regex.Replace(code, @"\bunsigned int\b", "uint32_t");
-            code = Regex.Replace(code, @"\bunsigned long\b", "uint64_t");
+            code = Regex.Replace(code, @"\bunsigned long long\b", "uint64_t");
             code = Regex.Replace(code, @"\bshort\b", "int16_t");
-            code = Regex.Replace(code, @"\blong\b", "int64_t");
+            code = Regex.Replace(code, @"\blong long\b", "int64_t");
+            code = Regex.Replace(code, @"\bsize_t\b", "uint64_t");
 
             Lexer lexer = new Lexer(code);
 
